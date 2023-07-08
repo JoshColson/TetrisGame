@@ -6,14 +6,18 @@ using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
+	const string linesClearedWriting = "Lines Cleared: ";
+	const string gamesWriting = "Games: ";
+
 	public Tilemap tilemap { private get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
+	public Text gamesText;
     public TetrominoData[] tetrominoes;
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
 	private int linesCleared = 0;
-	private string linesClearedWriting = "Lines Cleared: ";
+	private int games = 0;
 
 	public RectInt Bounds
 	{
@@ -26,6 +30,7 @@ public class Board : MonoBehaviour
 	private void Awake()
 	{
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
+		gamesText.text = gamesWriting+games.ToString();
 		tilemap = GetComponentInChildren<Tilemap>();
 		activePiece = GetComponentInChildren<Piece>();
 		for (int i = 0; i < tetrominoes.Length; i++) 
@@ -59,6 +64,10 @@ public class Board : MonoBehaviour
 
 	private void GameOver()
 	{
+		games++;
+		gamesText.text = gamesWriting + games.ToString();
+		linesCleared = 0;
+		linesClearedText.text = linesClearedWriting + linesCleared.ToString();
 		tilemap.ClearAllTiles();
 	}
 
