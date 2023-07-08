@@ -51,10 +51,10 @@ public class Piece : MonoBehaviour
 
 		if (increaseSpeed && fallTime < fallLock)
 		{
-			fallTime += (difficulty * 0.000001);
+			fallTime += (difficulty * 0.00003);
 			if (moveDelay < 0.05)
 			{
-				moveDelay-= (difficulty * 0.00000001);
+				moveDelay-= (difficulty * 0.0000001);
 			}
 		}
 
