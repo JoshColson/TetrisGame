@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -55,7 +54,8 @@ public class Ghost : MonoBehaviour
 		{
 			position.y = row;
 
-			if (board.IsValidPosition(trackingPiece, position))
+			var validData = board.IsValidPosition(trackingPiece, position);
+			if (!validData.colliding && !validData.outOfBounds)
 			{
 				this.position = position;
 			}

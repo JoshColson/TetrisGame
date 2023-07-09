@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using Assets.Controllers;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class WelcomeMenu : MonoBehaviour
