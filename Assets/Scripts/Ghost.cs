@@ -1,6 +1,8 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 public class Ghost : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class Ghost : MonoBehaviour
     public Tilemap tilemap {  get; private set; }
 	public Vector3Int[] cells { get; private set; }
 	public Vector3Int position { get; private set; }
+	private int rotationIndex;
 
 	private void Awake()
 	{
@@ -20,10 +23,16 @@ public class Ghost : MonoBehaviour
 
 	private void LateUpdate()
 	{
+		if (trackingPiece.position.x == position.x && trackingPiece.rotationIndex == rotationIndex)
+		{
+			return;
+		}
+
 		Clear();
 		Copy();
 		Drop();
 		Set();
+		rotationIndex = trackingPiece.rotationIndex;
 	}
 
 	private void Clear()
