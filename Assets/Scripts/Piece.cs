@@ -17,7 +17,7 @@ public class Piece : MonoBehaviour
 	public float lockDelay = 0.5f;
 	public Double moveDelay = 0.15;
 	public bool increaseSpeed = false;
-	public int difficulty = 1;
+	public int difficulty;
 	private float moveTime;
 	private float stepTime;
 	private float lockTime;
@@ -26,6 +26,7 @@ public class Piece : MonoBehaviour
 
 	public void Initialize(Board board, Vector3Int position, TetrominoData data)
 	{
+		difficulty = StartingData.difficultyLevel;
 		this.board = board;
 		this.position = position;
 		this.data = data;
