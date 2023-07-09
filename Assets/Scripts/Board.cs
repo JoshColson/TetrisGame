@@ -6,14 +6,26 @@ using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
+	const string linesClearedWriting = "Lines Cleared: ";
+	const string gamesWriting = "Games: ";
+	const string scoreWriting = "Score: ";
+	const int pointsOneLine = 40;
+	const int pointsTwoLine = 100;
+	const int pointsThreeLine = 300;
+	const int pointsFourLine = 1200;
+	const int perfectClearMultiplyer = 10;
+
 	public Tilemap tilemap { private get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
+	public Text gamesText;
+	public Text scoreText;
     public TetrominoData[] tetrominoes;
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
 	private int linesCleared = 0;
-	private string linesClearedWriting = "Lines Cleared: ";
+	private int games = 0;
+	private int score = 0;
 
 	public RectInt Bounds
 	{
@@ -26,6 +38,9 @@ public class Board : MonoBehaviour
 	private void Awake()
 	{
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
+		gamesText.text = gamesWriting+games.ToString();
+		scoreText.text = scoreWriting+score.ToString();
+
 		tilemap = GetComponentInChildren<Tilemap>();
 		activePiece = GetComponentInChildren<Piece>();
 		for (int i = 0; i < tetrominoes.Length; i++) 
@@ -59,6 +74,10 @@ public class Board : MonoBehaviour
 
 	private void GameOver()
 	{
+		games++;
+		gamesText.text = gamesWriting + games.ToString();
+		linesCleared = 0;
+		linesClearedText.text = linesClearedWriting + linesCleared.ToString();
 		tilemap.ClearAllTiles();
 	}
 
@@ -103,7 +122,9 @@ public class Board : MonoBehaviour
 	public void ClearLines()
 	{
 		RectInt bounds = Bounds;
-		int row = bounds.yMin;
+		var row = bounds.yMin;
+		var perfectClear = true;
+		var cleared = linesCleared;
 
 		while (row< bounds.yMax)
 		{
@@ -115,9 +136,39 @@ public class Board : MonoBehaviour
 			}
 			else
 			{
+				perfectClear = false;
 				row++;
 			}
 		}
+		score += CalculateScore(perfectClear, (linesCleared - cleared));
+		scoreText.text = scoreWriting + score.ToString();
+	}
+
+	private int CalculateScore(bool perfectClear, int linesCleared)
+	{
+		var score = 0;
+		switch (linesCleared)
+		{
+			case 1:
+				score = pointsOneLine;
+				break;
+			case 2:
+				score = pointsTwoLine;
+				break;
+			case 3:
+				score = pointsThreeLine;
+				break;
+			case 4:
+				score = pointsFourLine;
+				break;
+			default:
+				return 0;
+		}
+		if (perfectClear)
+		{
+			score = score * perfectClearMultiplyer;
+		}
+		return score;
 	}
 
 	private bool IsLineFull(int row)

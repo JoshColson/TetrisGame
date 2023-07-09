@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,19 +15,24 @@ public class Piece : MonoBehaviour
 
 	public float stepDelay = 1f;
 	public float lockDelay = 0.5f;
-	public float moveDelay = 0.15f;
+	public Double moveDelay = 0.15;
+	public bool increaseSpeed = false;
+	public int difficulty;
 	private float moveTime;
 	private float stepTime;
 	private float lockTime;
+	public Double fallTime=0;
+	public Double fallLock=0.97;
 
 	public void Initialize(Board board, Vector3Int position, TetrominoData data)
 	{
+		difficulty = StartingData.difficultyLevel;
 		this.board = board;
 		this.position = position;
 		this.data = data;
 		rotationIndex = 0;
 		stepTime = Time.time + stepDelay;
-		moveTime = Time.time + moveDelay;
+		moveTime = Time.time + (float)moveDelay;
 		lockTime = 0f;
 
 		if (cells == null)
@@ -42,6 +49,15 @@ public class Piece : MonoBehaviour
 	private void Update()
 	{
 		board.Clear(this);
+
+		if (increaseSpeed && fallTime < fallLock)
+		{
+			fallTime += (difficulty * 0.00003);
+			if (moveDelay < 0.05)
+			{
+				moveDelay-= (difficulty * 0.0000001);
+			}
+		}
 
 		lockTime += Time.deltaTime;
 
@@ -82,14 +98,14 @@ public class Piece : MonoBehaviour
 			HardDrop();
 		}
 
-		if (Time.time >= stepTime){
+		if ((Time.time+fallTime) >= stepTime){
 			Step();
 		}
 		board.Set(this);
 	}
 
 
-		private void Step()
+	private void Step()
 	{
 		stepTime = Time.time + stepDelay;
 
@@ -128,7 +144,7 @@ public class Piece : MonoBehaviour
 		{
 			position = newPosition;
 			lockTime = 0f;
-			moveTime = Time.time + moveDelay;
+			moveTime = Time.time + (float)moveDelay;
 		}
 		return valid;
 	}
