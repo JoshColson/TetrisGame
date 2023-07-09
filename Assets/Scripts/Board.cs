@@ -126,13 +126,13 @@ public class Board : MonoBehaviour
 				validData.outOfBoundsLeft ||
 				validData.outOfBoundsRight;
 
+			if (validData.outOfBounds)
+			{
+				break;
+			}
 			if (tilemap.HasTile(tilePosition))
 			{
 				validData.colliding = true;
-				if (validData.outOfBounds)
-				{
-					break;
-				}
 			}
 		}
 		return validData;
