@@ -59,7 +59,7 @@ public class Ghost : MonoBehaviour
 		var bounds = board.Bounds;
 		var row = trackingPiece.position.y;
 
-		while (row >= bounds.yMin)
+		while (row >= bounds.yMin-1)
 		{
 			position.y = row;
 
