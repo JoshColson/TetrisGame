@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Controllers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,6 +23,7 @@ public class WelcomeMenu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
 	{
+        highScore = GameOverData.highScore;
         highScoreText.text = highScoreWriting + highScore.ToString();
         difficultySlider.maxValue = maxDifficulty;
         difficultySlider.minValue = minDifficulty;
@@ -32,13 +34,14 @@ public class WelcomeMenu : MonoBehaviour
 
     private void NewGameClick()
     {
-        SceneManager.LoadScene("Tetris");
+        SceneController.SceneNavigate(SceneNames.Tetris);
     }
 
     private void SliderChangeCheck()
     {
         difficultyLevel = (int)difficultySlider.value;
         StartingData.difficultyLevel = difficultyLevel;
+        GameOverData.difficultyLevel = difficultyLevel;
 
 		difficultyText.text = difficultyWriting+difficultyLevel.ToString();
     }

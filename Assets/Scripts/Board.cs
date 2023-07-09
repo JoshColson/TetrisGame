@@ -1,13 +1,14 @@
 
 using System.Security.Cryptography;
+using Assets.Controllers;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
 	const string linesClearedWriting = "Lines Cleared: ";
-	const string gamesWriting = "Games: ";
 	const string scoreWriting = "Score: ";
 	const int pointsOneLine = 40;
 	const int pointsTwoLine = 100;
@@ -18,13 +19,11 @@ public class Board : MonoBehaviour
 	public Tilemap tilemap { private get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
-	public Text gamesText;
 	public Text scoreText;
     public TetrominoData[] tetrominoes;
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
 	private int linesCleared = 0;
-	private int games = 0;
 	private int score = 0;
 
 	public RectInt Bounds
@@ -38,7 +37,6 @@ public class Board : MonoBehaviour
 	private void Awake()
 	{
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
-		gamesText.text = gamesWriting+games.ToString();
 		scoreText.text = scoreWriting+score.ToString();
 
 		tilemap = GetComponentInChildren<Tilemap>();
@@ -74,11 +72,10 @@ public class Board : MonoBehaviour
 
 	private void GameOver()
 	{
-		games++;
-		gamesText.text = gamesWriting + games.ToString();
-		linesCleared = 0;
-		linesClearedText.text = linesClearedWriting + linesCleared.ToString();
-		tilemap.ClearAllTiles();
+		//tilemap.ClearAllTiles();
+		GameOverData.linesCleared = linesCleared;
+		GameOverData.score = score;
+		SceneController.SceneNavigate(SceneNames.GameOver);
 	}
 
 	public void Set(Piece piece)
