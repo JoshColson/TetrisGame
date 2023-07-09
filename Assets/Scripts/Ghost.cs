@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -44,13 +45,12 @@ public class Ghost : MonoBehaviour
 
 	private void Drop()
 	{
-		Vector3Int position = trackingPiece.position;
-		int current = position.y;
-		int bottom = -board.boardSize.y / 2-1;
-
 		board.Clear(trackingPiece);
+		Vector3Int position = trackingPiece.position;
+		var bounds = board.Bounds;
+		var row = trackingPiece.position.y;
 
-		for (int row=current; row >= bottom; row--) 
+		while (row >= bounds.yMin)
 		{
 			position.y = row;
 
@@ -63,6 +63,7 @@ public class Ghost : MonoBehaviour
 			{
 				break;
 			}
+			row--;
 		}
 		board.Set(trackingPiece);
 	}
