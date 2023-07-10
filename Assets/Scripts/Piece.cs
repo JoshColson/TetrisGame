@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using Unity.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Piece : MonoBehaviour
 {
@@ -52,10 +48,10 @@ public class Piece : MonoBehaviour
 
 		if (increaseSpeed && fallTime < fallLock)
 		{
-			fallTime += (difficulty * 0.00003);
+			fallTime += (difficulty * 0.000001);
 			if (moveDelay < 0.05)
 			{
-				moveDelay-= (difficulty * 0.0000001);
+				moveDelay-= (difficulty * 0.000005);
 			}
 		}
 
@@ -139,14 +135,14 @@ public class Piece : MonoBehaviour
 		newPosition.x += translation.x;
 		newPosition.y += translation.y;
 
-		bool valid = board.IsValidPosition(this, newPosition);
-		if (valid)
+		var validData = board.IsValidPosition(this, newPosition);
+		if ((!validData.colliding) && !validData.outOfBounds)
 		{
 			position = newPosition;
 			lockTime = 0f;
 			moveTime = Time.time + (float)moveDelay;
 		}
-		return valid;
+		return (!validData.colliding) && !validData.outOfBounds;
 	}
 
 	private void Rotate(int direction)

@@ -1,6 +1,8 @@
-
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 public class Ghost : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class Ghost : MonoBehaviour
     public Tilemap tilemap {  get; private set; }
 	public Vector3Int[] cells { get; private set; }
 	public Vector3Int position { get; private set; }
+	private int rotationIndex;
 
 	private void Awake()
 	{
@@ -20,10 +23,16 @@ public class Ghost : MonoBehaviour
 
 	private void LateUpdate()
 	{
+		if (trackingPiece.position.x == position.x && trackingPiece.rotationIndex == rotationIndex)
+		{
+			return;
+		}
+
 		Clear();
 		Copy();
 		Drop();
 		Set();
+		rotationIndex = trackingPiece.rotationIndex;
 	}
 
 	private void Clear()
@@ -45,17 +54,17 @@ public class Ghost : MonoBehaviour
 
 	private void Drop()
 	{
-		Vector3Int position = trackingPiece.position;
-		int current = position.y;
-		int bottom = -board.boardSize.y / 2-1;
-
 		board.Clear(trackingPiece);
+		Vector3Int position = trackingPiece.position;
+		var bounds = board.Bounds;
+		var row = trackingPiece.position.y;
 
-		for (int row=current; row >= bottom; row--) 
+		while (row >= bounds.yMin-1)
 		{
 			position.y = row;
 
-			if (board.IsValidPosition(trackingPiece, position))
+			var validData = board.IsValidPosition(trackingPiece, position);
+			if (!validData.colliding && !validData.outOfBounds)
 			{
 				this.position = position;
 			}
@@ -63,6 +72,7 @@ public class Ghost : MonoBehaviour
 			{
 				break;
 			}
+			row--;
 		}
 		board.Set(trackingPiece);
 	}

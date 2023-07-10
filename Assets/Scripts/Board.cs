@@ -1,5 +1,5 @@
 
-using System.Security.Cryptography;
+using Assets.Controllers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class Board : MonoBehaviour
 {
 	const string linesClearedWriting = "Lines Cleared: ";
-	const string gamesWriting = "Games: ";
 	const string scoreWriting = "Score: ";
 	const int pointsOneLine = 40;
 	const int pointsTwoLine = 100;
@@ -18,13 +17,11 @@ public class Board : MonoBehaviour
 	public Tilemap tilemap { private get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
-	public Text gamesText;
 	public Text scoreText;
     public TetrominoData[] tetrominoes;
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
 	private int linesCleared = 0;
-	private int games = 0;
 	private int score = 0;
 
 	public RectInt Bounds
@@ -38,7 +35,6 @@ public class Board : MonoBehaviour
 	private void Awake()
 	{
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
-		gamesText.text = gamesWriting+games.ToString();
 		scoreText.text = scoreWriting+score.ToString();
 
 		tilemap = GetComponentInChildren<Tilemap>();
@@ -62,7 +58,9 @@ public class Board : MonoBehaviour
 
 		activePiece.Initialize(this, spawnPosition, data);
 
-		if (IsValidPosition(activePiece, spawnPosition))
+		var validData = IsValidPosition(activePiece, spawnPosition);
+
+		if (!validData.colliding)
 		{
 			Set(activePiece);
 		}
@@ -74,11 +72,9 @@ public class Board : MonoBehaviour
 
 	private void GameOver()
 	{
-		games++;
-		gamesText.text = gamesWriting + games.ToString();
-		linesCleared = 0;
-		linesClearedText.text = linesClearedWriting + linesCleared.ToString();
-		tilemap.ClearAllTiles();
+		GameOverData.linesCleared = linesCleared;
+		GameOverData.score = score;
+		SceneController.SceneNavigate(SceneNames.GameOver);
 	}
 
 	public void Set(Piece piece)
@@ -98,25 +94,48 @@ public class Board : MonoBehaviour
 		}
 	}
 
-	public bool IsValidPosition(Piece piece, Vector3Int position)
+	public ValidPiece IsValidPosition(Piece piece, Vector3Int position)
 	{
+		ValidPiece validData = new ValidPiece();
 		RectInt bounds = Bounds;
-
 		for (int i = 0;i < piece.cells.Length; i++)
 		{
 			Vector3Int tilePosition = piece.cells[i] + position;
 
-			if (!bounds.Contains((Vector2Int)tilePosition))
+			switch (tilePosition)
 			{
-				return false;
+				case var _ when tilePosition.x < bounds.xMin:
+					validData.outOfBoundsLeft = true;
+					break;
+				case var _ when tilePosition.x >= bounds.xMax:
+					validData.outOfBoundsRight = true;
+					break;
+				case var _ when tilePosition.y > spawnPosition.y+1:
+					validData.outOfBoundsTop = true;
+					break;
+				case var _ when tilePosition.y < bounds.yMin:
+					validData.outOfBoundsBottom = true;
+					break;
+				default:
+					break;
+			}
+
+			validData.outOfBounds =
+				validData.outOfBoundsTop ||
+				validData.outOfBoundsBottom ||
+				validData.outOfBoundsLeft ||
+				validData.outOfBoundsRight;
+
+			if (validData.outOfBounds)
+			{
+				break;
 			}
 			if (tilemap.HasTile(tilePosition))
 			{
-				return false;
+				validData.colliding = true;
 			}
-
 		}
-		return true;
+		return validData;
 	}
 
 	public void ClearLines()
