@@ -9,16 +9,47 @@ public class Piece : MonoBehaviour
 	public Vector3Int[] cells { get; private set; }
 	public int rotationIndex { get; private set; }
 
-	public float stepDelay = 1f;
 	public float lockDelay = 0.5f;
-	public Double moveDelay = 0.15;
 	public bool increaseSpeed = false;
 	public int difficulty;
-	private float moveTime;
-	private float stepTime;
 	private float lockTime;
-	public Double fallTime=0;
-	public Double fallLock=0.97;
+
+	private float maximumSpeed = 0.4f; // Maximum time in seconds between moves
+	private float timeTakes = 600f; // Time in seconds to reach the maximum speed
+	private float startingSpeed = 2.0f; // Time in seconds before the first move down event
+	private float maxSpeedHardCeiling = 0.05f;
+	private float rampTimeHardCeiling = 8f;
+
+	public float speedMultiplier { get; private set; } // Multiplier for speed
+	private float currentSpeed; // Current speed
+	private float elapsedTime = 0.0f; // Elapsed time since the start
+	private float moveDownTimer = 0.0f; // Timer for move down interval
+
+
+	private void Awake()
+	{
+		SetDifficultySettings();
+	}
+
+	private void SetDifficultySettings()
+	{
+		speedMultiplier = difficulty - 1;
+		currentSpeed = (startingSpeed - (speedMultiplier) * 0.1f);
+		timeTakes -= timeTakes * (speedMultiplier / 15);
+		maximumSpeed = (maximumSpeed - (speedMultiplier) * 0.1f);
+		if (!increaseSpeed)
+		{
+			maximumSpeed = startingSpeed;
+		}
+		else if (maximumSpeed < maxSpeedHardCeiling)
+		{
+			maximumSpeed = maxSpeedHardCeiling;
+		}
+		if (timeTakes < rampTimeHardCeiling)
+		{
+			timeTakes = rampTimeHardCeiling;
+		}
+	}
 
 	public void Initialize(Board board, Vector3Int position, TetrominoData data)
 	{
@@ -27,8 +58,6 @@ public class Piece : MonoBehaviour
 		this.position = position;
 		this.data = data;
 		rotationIndex = 0;
-		stepTime = Time.time + stepDelay;
-		moveTime = Time.time + (float)moveDelay;
 		lockTime = 0f;
 
 		if (cells == null)
@@ -46,65 +75,68 @@ public class Piece : MonoBehaviour
 	{
 		board.Clear(this);
 
-		if (increaseSpeed && fallTime < fallLock)
+		if (Input.anyKeyDown)
 		{
-			fallTime += (difficulty * 0.000001);
-			if (moveDelay < 0.05)
-			{
-				moveDelay-= (difficulty * 0.000005);
-			}
+			PlayerMovement();
 		}
 
+		StepController();
+		board.Set(this);
+	}
+
+	private void StepController()
+	{
+		moveDownTimer += Time.deltaTime;
 		lockTime += Time.deltaTime;
 
+		if (!(currentSpeed <= maximumSpeed))
+		{
+			elapsedTime += Time.deltaTime;
+			float timeRemaining = timeTakes - elapsedTime;
+			currentSpeed = maximumSpeed - (timeRemaining / timeTakes) * (maximumSpeed - startingSpeed);
+			currentSpeed = Mathf.Clamp(currentSpeed, maximumSpeed, startingSpeed);
+		}
+
+		if (moveDownTimer >= currentSpeed)
+		{
+			moveDownTimer = 0.0f;
+			Step();
+		}
+	}
+
+	private void PlayerMovement()
+	{
 		if (Input.GetKeyDown(KeyCode.Q))
 		{
 			Rotate(-1);
 		}
-		else if (Input.GetKeyDown(KeyCode.E)) 
+		else if (Input.GetKeyDown(KeyCode.E))
 		{
 			Rotate(1);
 		}
 
-		if (Input.GetKey(KeyCode.A))
+		if (Input.GetKeyDown(KeyCode.A))
 		{
-			if (Time.time >=  moveTime)
-			{
-				Move(Vector2Int.left);
-			}
+			Move(Vector2Int.left);
 		}
-		else if (Input.GetKey(KeyCode.D))
+		else if (Input.GetKeyDown(KeyCode.D))
 		{
-			if (Time.time >= moveTime)
-			{
-				Move(Vector2Int.right);
-			}
+			Move(Vector2Int.right);
 		}
 
-		if (Input.GetKey(KeyCode.S))
+		if (Input.GetKeyDown(KeyCode.S))
 		{
-			if (Time.time >= moveTime)
-			{
-				Move(Vector2Int.down);
-			}
+			Move(Vector2Int.down);
 		}
 
-		if (Input.GetKeyDown(KeyCode.Space)) 
+		if (Input.GetKeyDown(KeyCode.Space))
 		{
 			HardDrop();
 		}
-
-		if ((Time.time+fallTime) >= stepTime){
-			Step();
-		}
-		board.Set(this);
 	}
-
 
 	private void Step()
 	{
-		stepTime = Time.time + stepDelay;
-
 		Move(Vector2Int.down);
 
 		if(lockTime >= lockDelay)
@@ -140,7 +172,6 @@ public class Piece : MonoBehaviour
 		{
 			position = newPosition;
 			lockTime = 0f;
-			moveTime = Time.time + (float)moveDelay;
 		}
 		return (!validData.colliding) && !validData.outOfBounds;
 	}
