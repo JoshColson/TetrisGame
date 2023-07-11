@@ -1,4 +1,5 @@
 
+using System;
 using Assets.Controllers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -23,6 +24,9 @@ public class Board : MonoBehaviour
 	public Vector2Int boardSize = new Vector2Int(10, 20);
 	private int linesCleared = 0;
 	private int score = 0;
+
+
+
 
 	public RectInt Bounds
 	{
@@ -52,7 +56,7 @@ public class Board : MonoBehaviour
 
 	public void SpawnPiece()
 	{
-		int random = Random.Range(0, tetrominoes.Length);
+		int random = UnityEngine.Random.Range(0, tetrominoes.Length);
 
 		TetrominoData data = tetrominoes[random];
 
@@ -185,11 +189,15 @@ public class Board : MonoBehaviour
 		}
 		if (perfectClear)
 		{
-			score = score * perfectClearMultiplyer;
+			score = (score * perfectClearMultiplyer);
 		}
-		return score;
-	}
+		if ((int) Math.Round(score *+ (activePiece.speedMultiplier * 0.5))==0)
+		{
+			return score;
+		}
 
+		return Mathf.RoundToInt(Mathf.Clamp((float)(score + score * (activePiece.speedMultiplier * 0.5)), score, float.MaxValue));
+	}
 	private bool IsLineFull(int row)
 	{
 		RectInt bounds = Bounds;
