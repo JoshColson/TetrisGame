@@ -602,14 +602,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e05b8238d83b24c4d8be22c29e8da6c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  position: {x: 0, y: 0, z: 0}
-  stepDelay: 1
   lockDelay: 0.5
-  moveDelay: 0.15
   increaseSpeed: 1
-  difficulty: 1
-  fallTime: 0
-  fallLock: 0.97
+  difficulty: 5
 --- !u!114 &520034067
 MonoBehaviour:
   m_ObjectHideFlags: 0

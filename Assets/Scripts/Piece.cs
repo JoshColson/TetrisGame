@@ -34,9 +34,9 @@ public class Piece : MonoBehaviour
 	private void SetDifficultySettings()
 	{
 		speedMultiplier = difficulty - 1;
-		currentSpeed = (startingSpeed - (speedMultiplier) * 0.1f);
+		currentSpeed = (startingSpeed - (speedMultiplier) * 0.2f);
 		timeTakes -= timeTakes * (speedMultiplier / 15);
-		maximumSpeed = (maximumSpeed - (speedMultiplier) * 0.1f);
+		maximumSpeed = (maximumSpeed - (speedMultiplier) * 0.2f);
 		if (!increaseSpeed)
 		{
 			maximumSpeed = startingSpeed;
