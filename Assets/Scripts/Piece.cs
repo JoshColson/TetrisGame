@@ -11,24 +11,26 @@ public class Piece : MonoBehaviour
 
 	public float lockDelay = 0.5f;
 	public bool increaseSpeed = false;
-	public int difficulty;
+	public int difficulty = StartingData.difficultyLevel;
 	private float lockTime;
 
 	private float maximumSpeed = 0.4f; // Maximum time in seconds between moves
-	private float timeTakes = 600f; // Time in seconds to reach the maximum speed
+	public float timeTakes = 600f; // Time in seconds to reach the maximum speed
 	private float startingSpeed = 2.0f; // Time in seconds before the first move down event
 	private float maxSpeedHardCeiling = 0.05f;
 	private float rampTimeHardCeiling = 8f;
 
 	public float speedMultiplier { get; private set; } // Multiplier for speed
-	private float currentSpeed; // Current speed
-	private float elapsedTime = 0.0f; // Elapsed time since the start
-	private float moveDownTimer = 0.0f; // Timer for move down interval
+	public float currentSpeed; // Current speed
+							   //public float elapsedTime = 0.0f; // Elapsed time since the start
+	private float stepTimer = 0.0f; // Timer for move down interval
+	public float decrementCurrentSpeed;
 
 
 	private void Awake()
 	{
 		SetDifficultySettings();
+		decrementCurrentSpeed = (maximumSpeed - startingSpeed) / timeTakes;
 	}
 
 	private void SetDifficultySettings()
@@ -53,7 +55,6 @@ public class Piece : MonoBehaviour
 
 	public void Initialize(Board board, Vector3Int position, TetrominoData data)
 	{
-		difficulty = StartingData.difficultyLevel;
 		this.board = board;
 		this.position = position;
 		this.data = data;
@@ -86,20 +87,18 @@ public class Piece : MonoBehaviour
 
 	private void StepController()
 	{
-		moveDownTimer += Time.deltaTime;
+		stepTimer += Time.deltaTime;
 		lockTime += Time.deltaTime;
 
-		if (!(currentSpeed <= maximumSpeed))
+		if (currentSpeed > (maximumSpeed + decrementCurrentSpeed))
 		{
-			elapsedTime += Time.deltaTime;
-			float timeRemaining = timeTakes - elapsedTime;
-			currentSpeed = maximumSpeed - (timeRemaining / timeTakes) * (maximumSpeed - startingSpeed);
-			currentSpeed = Mathf.Clamp(currentSpeed, maximumSpeed, startingSpeed);
+			//elapsedTime += Time.deltaTime;
+			currentSpeed += decrementCurrentSpeed * Time.deltaTime;
 		}
 
-		if (moveDownTimer >= currentSpeed)
+		if (stepTimer >= currentSpeed)
 		{
-			moveDownTimer = 0.0f;
+			stepTimer = 0.0f;
 			Step();
 		}
 	}
