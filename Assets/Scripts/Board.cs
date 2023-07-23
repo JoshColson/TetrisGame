@@ -14,17 +14,18 @@ public class Board : MonoBehaviour
 	const int pointsThreeLine = 300;
 	const int pointsFourLine = 1200;
 	const int perfectClearMultiplyer = 10;
-
+	public TetrominoData[] tetrominos;
 	public Tilemap tilemap { private get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
 	public Text scoreText;
-    public TetrominoData[] tetrominoes;
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
+
 	private int linesCleared = 0;
 	private int score = 0;
-
+	public TetrominoPreview tetrominoPreview;
+	public SceneController sceneController { get; private set; }
 
 
 
@@ -38,15 +39,12 @@ public class Board : MonoBehaviour
 	}
 	private void Awake()
 	{
+		sceneController = new SceneController(tetrominos);
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
 		scoreText.text = scoreWriting+score.ToString();
 
 		tilemap = GetComponentInChildren<Tilemap>();
 		activePiece = GetComponentInChildren<Piece>();
-		for (int i = 0; i < tetrominoes.Length; i++) 
-		{
-			tetrominoes[i].Initialize();
-		}
 	}
 
 	private void Start()
@@ -56,11 +54,9 @@ public class Board : MonoBehaviour
 
 	public void SpawnPiece()
 	{
-		int random = UnityEngine.Random.Range(0, tetrominoes.Length);
-
-		TetrominoData data = tetrominoes[random];
-
-		activePiece.Initialize(this, spawnPosition, data);
+		sceneController.MoveUpTetronimos();
+		tetrominoPreview.UpdateNextTetrominoVisuals(sceneController.nextTetronimo);
+		activePiece.Initialize(this, spawnPosition, sceneController.currentTetronimo);
 
 		var validData = IsValidPosition(activePiece, spawnPosition);
 
@@ -78,7 +74,7 @@ public class Board : MonoBehaviour
 	{
 		GameOverData.linesCleared = linesCleared;
 		GameOverData.score = score;
-		SceneController.SceneNavigate(SceneNames.GameOver);
+		NavigationController.SceneNavigate(SceneNames.GameOver);
 	}
 
 	public void Set(Piece piece)

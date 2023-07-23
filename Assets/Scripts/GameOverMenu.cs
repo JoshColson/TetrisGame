@@ -40,6 +40,6 @@ public class GameOverMenu : MonoBehaviour
 
 	private void ReturnClick()
 	{
-		SceneController.SceneNavigate(SceneNames.Welcome);
+		NavigationController.SceneNavigate(SceneNames.Welcome);
 	}
 }
