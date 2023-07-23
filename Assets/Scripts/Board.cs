@@ -15,7 +15,7 @@ public class Board : MonoBehaviour
 	const int pointsFourLine = 1200;
 	const int perfectClearMultiplyer = 10;
 	public TetrominoData[] tetrominos;
-	public Tilemap tilemap { private get; set; }
+	public Tilemap tilemap { get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
 	public Text scoreText;
@@ -24,7 +24,6 @@ public class Board : MonoBehaviour
 
 	private int linesCleared = 0;
 	private int score = 0;
-	public TetrominoPreview tetrominoPreview;
 	public SceneController sceneController { get; private set; }
 
 
@@ -55,7 +54,6 @@ public class Board : MonoBehaviour
 	public void SpawnPiece()
 	{
 		sceneController.MoveUpTetronimos();
-		tetrominoPreview.UpdateNextTetrominoVisuals(sceneController.nextTetronimo);
 		activePiece.Initialize(this, spawnPosition, sceneController.currentTetronimo);
 
 		var validData = IsValidPosition(activePiece, spawnPosition);

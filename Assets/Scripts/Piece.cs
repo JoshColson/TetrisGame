@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Assets.Controllers;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
 	public Board board { get; private set; }
+
+	private SceneController sceneController;
 	public TetrominoData data { get; private set; }
 	public Vector3Int position { get; private set; }
 	public Vector3Int[] cells { get; private set; }
@@ -33,6 +35,45 @@ public class Piece : MonoBehaviour
 		decrementCurrentSpeed = (maximumSpeed - startingSpeed) / timeTakes;
 	}
 
+
+	private void BumpIntoBounds(Vector3Int newPosition)
+	{
+		var validData = board.IsValidPosition(this, newPosition);
+
+		while (validData.outOfBounds)
+		{
+			if (validData.outOfBoundsLeft)
+			{
+				newPosition.x++;
+			}
+			else if (validData.outOfBoundsRight)
+			{
+				newPosition.x--;
+			}
+			else if (validData.outOfBoundsBottom)
+			{
+				newPosition.y++;
+			}
+			else if (validData.outOfBoundsTop)
+			{
+				newPosition.y--;
+			}
+			else
+			{
+				break;
+			}
+			validData = board.IsValidPosition(this, newPosition);
+		}
+		position = newPosition;
+	}
+
+	private void ReplacePiece(TetrominoData newPiece)
+	{
+		Initialize(board, position, newPiece);
+		sceneController.NewTetronimo(newPiece);
+		BumpIntoBounds(position);
+	}
+
 	private void SetDifficultySettings()
 	{
 		speedMultiplier = difficulty - 1;
@@ -56,6 +97,7 @@ public class Piece : MonoBehaviour
 	public void Initialize(Board board, Vector3Int position, TetrominoData data)
 	{
 		this.board = board;
+		sceneController = board.sceneController;
 		this.position = position;
 		this.data = data;
 		rotationIndex = 0;
@@ -105,7 +147,21 @@ public class Piece : MonoBehaviour
 
 	private void PlayerMovement()
 	{
-		if (Input.GetKeyDown(KeyCode.Q))
+		if (Input.GetKeyDown(KeyCode.C))
+		{
+			if (sceneController.heldTetromino is null)
+			{
+				sceneController.StoreHeldTetromino();
+				ReplacePiece(sceneController.currentTetronimo);
+			}
+			else
+			{
+				var held = sceneController.heldTetromino;
+				sceneController.StoreHeldTetromino();
+				ReplacePiece((TetrominoData)held);
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.Q))
 		{
 			Rotate(-1);
 		}

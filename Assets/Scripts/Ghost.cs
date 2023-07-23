@@ -23,7 +23,7 @@ public class Ghost : MonoBehaviour
 
 	private void LateUpdate()
 	{
-		if (trackingPiece.position.x == position.x && trackingPiece.rotationIndex == rotationIndex)
+		if (trackingPiece.position.x == position.x && trackingPiece.rotationIndex == rotationIndex && trackingPiece.cells == cells )
 		{
 			return;
 		}

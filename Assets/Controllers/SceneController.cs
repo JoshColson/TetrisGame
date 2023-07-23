@@ -11,10 +11,23 @@ namespace Assets.Controllers
 		public TetrominoData currentTetronimo { get; set; }
 		public TetrominoData[] tetrominoes { get; set; }
 
+		public TetrominoData? heldTetromino { get; set; }
 
+		private HoldTetromino holdTetrominoScript;
+		private PreviewTetromino previewTetrominoScript;
+
+		private GameObject holdTetrominoObject;
+
+		private GameObject previewTetrominoObject;
 
 		public SceneController(TetrominoData[] tetrominos)
 		{
+			holdTetrominoObject = GameObject.Find("HoldTetromino");
+			previewTetrominoObject = GameObject.Find("PreviewTetromino");
+
+			holdTetrominoScript = holdTetrominoObject.GetComponent<HoldTetromino>();
+			previewTetrominoScript = previewTetrominoObject.GetComponent<PreviewTetromino>();
+
 			//Initialize tetromino data
 			tetrominoes = tetrominos;
 
@@ -24,19 +37,40 @@ namespace Assets.Controllers
 			}
 
 			//Populate nextTetronimo
-			newNextTetronimo();
+			NewNextTetronimo();
 		}
 
-		public void newNextTetronimo()
+		public void NewNextTetronimo()
 		{
-			int random = UnityEngine.Random.Range(0, tetrominoes.Length);
+			int random = Random.Range(0, tetrominoes.Length);
 			nextTetronimo = tetrominoes[random];
+			previewTetrominoScript.UpdateNextTetrominoVisuals(nextTetronimo);
 		}
 
 		public void MoveUpTetronimos()
 		{
-			currentTetronimo = nextTetronimo;
-			newNextTetronimo();
+			NewTetronimo(nextTetronimo);
+			NewNextTetronimo();
+		}
+
+		public void NewTetronimo(TetrominoData tetromino)
+		{
+			currentTetronimo = tetromino;
+		}
+
+		public void StoreHeldTetromino()
+		{
+			if (heldTetromino is null)
+			{
+				heldTetromino = currentTetronimo;
+				MoveUpTetronimos();
+			}
+			else
+			{
+				heldTetromino = currentTetronimo;
+			}
+
+			holdTetrominoScript.UpdateHeldTetrominoVisuals(heldTetromino);
 		}
 
 
