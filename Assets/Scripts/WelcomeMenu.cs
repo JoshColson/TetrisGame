@@ -31,7 +31,7 @@ public class WelcomeMenu : MonoBehaviour
 
     private void NewGameClick()
     {
-        SceneController.SceneNavigate(SceneNames.Tetris);
+		NavigationController.SceneNavigate(SceneNames.Tetris);
     }
 
     private void SliderChangeCheck()
