@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class TetrominoPreview : MonoBehaviour
+public class PreviewTetromino : MonoBehaviour
 {
 
 	public Vector3Int[] cells { get; private set; }
