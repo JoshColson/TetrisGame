@@ -1,5 +1,7 @@
-﻿using Assets.Controllers;
+﻿using System.Collections;
+using Assets.Controllers;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Piece : MonoBehaviour
 {
@@ -7,9 +9,9 @@ public class Piece : MonoBehaviour
 
 	private SceneController sceneController;
 	public TetrominoData data { get; private set; }
-	public Vector3Int position { get; private set; }
-	public Vector3Int[] cells { get; private set; }
-	public int rotationIndex { get; private set; }
+	public Vector3Int position { get; set; }
+	public Vector3Int[] cells { get; set; }
+	public int rotationIndex { get; set; }
 
 	public float lockDelay = 0.5f;
 	public bool increaseSpeed = false;
@@ -27,7 +29,8 @@ public class Piece : MonoBehaviour
 							   //public float elapsedTime = 0.0f; // Elapsed time since the start
 	private float stepTimer = 0.0f; // Timer for move down interval
 	public float decrementCurrentSpeed;
-
+	public bool IsProposedPiece { get; set; } = false;
+	public bool setCollide { private get; set; } = true;
 
 	private void Awake()
 	{
@@ -36,7 +39,7 @@ public class Piece : MonoBehaviour
 	}
 
 
-	private void BumpIntoBounds(Vector3Int newPosition)
+	private void ReturnToBounds(Vector3Int newPosition)
 	{
 		var validData = board.IsValidPosition(this, newPosition);
 
@@ -71,7 +74,7 @@ public class Piece : MonoBehaviour
 	{
 		Initialize(board, position, newPiece);
 		sceneController.NewTetronimo(newPiece);
-		BumpIntoBounds(position);
+		ReturnToBounds(position);
 	}
 
 	private void SetDifficultySettings()
@@ -118,13 +121,15 @@ public class Piece : MonoBehaviour
 	{
 		board.Clear(this);
 
+		//activate input from user
 		if (Input.anyKeyDown)
 		{
+			//return if human input
 			PlayerMovement();
 		}
 
 		StepController();
-		board.Set(this);
+		board.Set(this, false);
 	}
 
 	private void StepController()
@@ -190,24 +195,29 @@ public class Piece : MonoBehaviour
 		}
 	}
 
+
+
 	private void Step()
 	{
-		Move(Vector2Int.down);
+		if (IsProposedPiece)
+		{
+			return;
+		}
 
-		if(lockTime >= lockDelay)
+		if((!Move(Vector2Int.down)) && lockTime >= lockDelay)
 		{
 			Lock() ;
 		}
 	}
 
-	private void Lock()
+	public void Lock()
 	{
-		board.Set(this);
+		board.Set(this, true);
 		board.ClearLines();
 		board.SpawnPiece();
 	}
 
-	private void HardDrop()
+	public void HardDrop()
 	{
 		while (Move(Vector2Int.down))
 		{
@@ -216,22 +226,29 @@ public class Piece : MonoBehaviour
 		Lock();
 	}
 
-	private bool Move(Vector2Int translation)
+	public bool Move(Vector2Int translation)
 	{
 		Vector3Int newPosition = position;
 		newPosition.x += translation.x;
 		newPosition.y += translation.y;
 
 		var validData = board.IsValidPosition(this, newPosition);
-		if ((!validData.colliding) && !validData.outOfBounds)
+		if (!validData.colliding && !validData.outOfBounds)
 		{
-			position = newPosition;
-			lockTime = 0f;
+			board.Clear(this);
+			SetPositionAndWait(newPosition);
+
 		}
 		return (!validData.colliding) && !validData.outOfBounds;
 	}
+	public void SetPositionAndWait(Vector3Int newPosition)
+	{
+		position = newPosition;
+		lockTime = 0f;
+		//wait for 2 seconds without waitforsecondsrealtime or waitforsen
+	}
 
-	private void Rotate(int direction)
+	public void Rotate(int direction)
 	{
 		int originalRotation = rotationIndex;
 		rotationIndex = Wrap(rotationIndex + direction, 0 ,4);
@@ -310,6 +327,17 @@ public class Piece : MonoBehaviour
 		{
 			return min + (input - min) % (max - min);
 		}
+	}
+
+	public bool TileCheck(TileBase tile)
+	{
+		if (tile == null || 
+			tile.name == TileNames.NoCollideTile.ToString() ||
+			tile.name == TileNames.PossiblePlacement.ToString())
+		{
+			return false;
+		}
+		return true;
 	}
 
 

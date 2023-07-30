@@ -74,7 +74,7 @@ public class Ghost : MonoBehaviour
 			}
 			row--;
 		}
-		board.Set(trackingPiece);
+		board.Set(trackingPiece, false);
 	}
 
 	private void Set()

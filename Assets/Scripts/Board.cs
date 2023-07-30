@@ -1,4 +1,3 @@
-
 using System;
 using Assets.Controllers;
 using UnityEngine;
@@ -15,6 +14,7 @@ public class Board : MonoBehaviour
 	const int pointsFourLine = 1200;
 	const int perfectClearMultiplyer = 10;
 	public TetrominoData[] tetrominos;
+	public GameObject ruleBasedAi;
 	public Tilemap tilemap { get; set; }
 	public Piece activePiece { get; private set; }
 	public Text linesClearedText; 
@@ -24,9 +24,9 @@ public class Board : MonoBehaviour
 
 	private int linesCleared = 0;
 	private int score = 0;
+
 	public SceneController sceneController { get; private set; }
-
-
+	public bool ruleBasedAIActive;
 
 	public RectInt Bounds
 	{
@@ -41,9 +41,10 @@ public class Board : MonoBehaviour
 		sceneController = new SceneController(tetrominos);
 		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
 		scoreText.text = scoreWriting+score.ToString();
-
 		tilemap = GetComponentInChildren<Tilemap>();
 		activePiece = GetComponentInChildren<Piece>();
+		//get noCollideTile from the same index tetrominos
+
 	}
 
 	private void Start()
@@ -55,12 +56,15 @@ public class Board : MonoBehaviour
 	{
 		sceneController.MoveUpTetronimos();
 		activePiece.Initialize(this, spawnPosition, sceneController.currentTetronimo);
-
 		var validData = IsValidPosition(activePiece, spawnPosition);
 
 		if (!validData.colliding)
 		{
-			Set(activePiece);
+			Set(activePiece, false);
+			if (ruleBasedAIActive)
+			{
+				//ruleBasedAiController.Go();
+			}
 		}
 		else
 		{
@@ -75,12 +79,30 @@ public class Board : MonoBehaviour
 		NavigationController.SceneNavigate(SceneNames.GameOver);
 	}
 
-	public void Set(Piece piece)
+	public void Set(Piece piece, bool? collide=null, bool possiblePlacement = false)
 	{
+		Clear(piece);
+		Tile tile;
+		if (collide == true)
+		{
+			tile = piece.data.tile;
+		}
+		else if (collide == false)
+		{
+			tile = piece.data.noCollideTile;
+		}
+		else if (possiblePlacement)
+		{
+			tile = piece.data.possiblePlacementTile;
+		}
+		else
+		{
+			tile = null;
+		}
 		for (int i = 0; i<piece.cells.Length; i++)
 		{
 			Vector3Int tilePosition = piece.cells[i] + piece.position;
-			tilemap.SetTile(tilePosition, piece.data.tile);
+			tilemap.SetTile(tilePosition, tile);
 		}
 	}
 	public void Clear(Piece piece)
@@ -108,7 +130,7 @@ public class Board : MonoBehaviour
 				case var _ when tilePosition.x >= bounds.xMax:
 					validData.outOfBoundsRight = true;
 					break;
-				case var _ when tilePosition.y > spawnPosition.y+1:
+				case var _ when tilePosition.y > spawnPosition.y+10:
 					validData.outOfBoundsTop = true;
 					break;
 				case var _ when tilePosition.y < bounds.yMin:
@@ -128,13 +150,15 @@ public class Board : MonoBehaviour
 			{
 				break;
 			}
-			if (tilemap.HasTile(tilePosition))
+			TileBase tile = tilemap.GetTile(tilePosition);
+			if (piece.TileCheck(tile))
 			{
 				validData.colliding = true;
 			}
 		}
 		return validData;
 	}
+
 
 	public void ClearLines()
 	{
