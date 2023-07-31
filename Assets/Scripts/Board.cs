@@ -70,8 +70,8 @@ public class Board : MonoBehaviour
 
 	private void GameOver()
 	{
-		GameOverData.linesCleared = linesCleared;
-		GameOverData.score = score;
+		GameData.linesCleared = linesCleared;
+		GameData.score = score;
 		NavigationController.SceneNavigate(SceneNames.GameOver);
 	}
 

@@ -1,4 +1,4 @@
-public static class GameOverData
+public static class GameData
 {
     public static int difficultyLevel { get; set; } = 1;
 

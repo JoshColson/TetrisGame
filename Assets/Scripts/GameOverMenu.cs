@@ -20,8 +20,8 @@ public class GameOverMenu : MonoBehaviour
 
 	public void Start()
 	{
-		score = GameOverData.score;
-		difficultyText.text = difficultyWriting+GameOverData.difficultyLevel.ToString();
+		score = GameData.score;
+		difficultyText.text = difficultyWriting+GameData.difficultyLevel.ToString();
 		scoreText.text = scoreWriting+score.ToString();
 		returnButton.onClick.AddListener(ReturnClick);
 
@@ -30,12 +30,18 @@ public class GameOverMenu : MonoBehaviour
 
 	private void SetHighScore()
 	{
-		if (score > GameOverData.highScore)
+		if (score > GameData.highScore)
 		{
-			GameOverData.highScore = score;
+			GameData.highScore = score;
 			newText.enabled = true;
 		}
-		highScore.text = highScoreWriting + GameOverData.highScore.ToString();
+		highScore.text = highScoreWriting + GameData.highScore.ToString();
+		SaveHighScore(score);
+	}
+
+	private void SaveHighScore(int score)
+	{
+		PlayerPrefs.SetInt("HighScore", score);
 	}
 
 	private void ReturnClick()
