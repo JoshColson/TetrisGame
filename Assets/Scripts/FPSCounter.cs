@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class FPSCounter : MonoBehaviour
 {
-	public TextMeshProUGUI fpsCounterText;
+	public Text fpsCounterText;
 
 	private Dictionary<int, string> CachedNumberStrings = new();
 	private int[] _frameRateSamples;
