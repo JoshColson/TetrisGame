@@ -80,7 +80,10 @@ public class Board : MonoBehaviour
 		for (int i = 0; i<piece.cells.Length; i++)
 		{
 			Vector3Int tilePosition = piece.cells[i] + piece.position;
-			tilemap.SetTile(tilePosition, piece.data.tile);
+			if (tilePosition.y < Bounds.yMax)
+			{
+				tilemap.SetTile(tilePosition, piece.data.tile);
+			}
 		}
 	}
 	public void Clear(Piece piece)
