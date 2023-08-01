@@ -9,24 +9,32 @@ public class WelcomeMenu : MonoBehaviour
     const string highScoreWriting = "High Score: ";
 
     public Button newGameButton;
+    public Button resetHighScoreButton;
     public Slider difficultySlider;
     public TextMeshProUGUI difficultyText;
     public TextMeshProUGUI highScoreText;
     private int difficultyLevel;
     private int maxDifficulty = 5;
     private int minDifficulty = 1;
-    public int highScore { get; private set; } = 0;
+    private int highScore { get; set; } = 0;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
 	{
-        highScore = GameOverData.highScore;
-        highScoreText.text = highScoreWriting + highScore.ToString();
+        LoadSavedData();
+		highScoreText.text = highScoreWriting + highScore.ToString();
         difficultySlider.maxValue = maxDifficulty;
         difficultySlider.minValue = minDifficulty;
 		difficultySlider.wholeNumbers = true;
 		difficultySlider.onValueChanged.AddListener(delegate { SliderChangeCheck(); });
         newGameButton.onClick.AddListener(NewGameClick);
+        resetHighScoreButton.onClick.AddListener(ResetHighScoreClick);
+	}
+
+    private void LoadSavedData()
+    {
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        GameData.highScore = highScore;
 	}
 
     private void NewGameClick()
@@ -34,18 +42,21 @@ public class WelcomeMenu : MonoBehaviour
 		NavigationController.SceneNavigate(SceneNames.Tetris);
     }
 
+    private void ResetHighScoreClick()
+    {
+        highScore = 0;
+        GameData.highScore = highScore;
+		PlayerPrefs.SetInt("HighScore", 0);
+		highScoreText.text = highScoreWriting + highScore.ToString();
+        resetHighScoreButton.interactable = false;
+	}
+
     private void SliderChangeCheck()
     {
         difficultyLevel = (int)difficultySlider.value;
         StartingData.difficultyLevel = difficultyLevel;
-        GameOverData.difficultyLevel = difficultyLevel;
+        GameData.difficultyLevel = difficultyLevel;
 
 		difficultyText.text = difficultyWriting+difficultyLevel.ToString();
-    }
-
-	// Update is called once per frame
-	void Update()
-    {
-        
     }
 }
