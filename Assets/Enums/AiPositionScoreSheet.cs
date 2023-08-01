@@ -1,7 +1,8 @@
 public enum AiPositionScoreSheet
 {
-	LineClear = 10,
-	GapsCreated = -40,
-	FlatterTop = 3,
-	HeigherHeight = -4
+	LineClear = 20,
+	GapsCreated = -10,
+	FlatterTop = 1,
+	LowerOverallHeight = 3,
+	LowerPiece = 4
 }

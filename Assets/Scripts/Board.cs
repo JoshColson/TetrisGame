@@ -72,6 +72,22 @@ public class Board : MonoBehaviour
 		}
 	}
 
+	//Get row number from tile position
+	public int GetRowNumber(float yPosition)
+	{
+		// Shift the y position by 10 units so that the range becomes 0 to 20
+		float shiftedYPosition = yPosition + 10f;
+
+		// Calculate the row number by dividing the shifted y position by the row height
+		// The row height is the total range (20 units) divided by the number of rows (20 rows)
+		int rowNumber = Mathf.FloorToInt(shiftedYPosition);
+
+		// Clamp the row number to ensure it is within the valid range (0 to 20)
+		rowNumber = Mathf.Clamp(rowNumber, 0, 20);
+
+		return rowNumber;
+	}
+
 	private void GameOver()
 	{
 		GameOverData.linesCleared = linesCleared;

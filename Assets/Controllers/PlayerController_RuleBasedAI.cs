@@ -11,13 +11,11 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 	public GameObject ghostBoard;
 
     private Tilemap mainTileMap;
-
 	private Board board;
     private Piece piece;
 
 	private List<PossibleMove> possibleMoves = new List<PossibleMove>();
 	private PossibleMove bestMove;
-
 	public Button activateAi;
 
 	private void Awake()
@@ -52,7 +50,6 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 	//{
 	//	yield return new WaitForSeconds(duration);
 	//}
-
 
 	private void MoveIntoBestMove()
 	{
@@ -103,18 +100,20 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 		while (piece.rotationIndex != 0); // Break if piece is same as original rotation
 	}
 
-	private GameState GetGameState(Tilemap tilemap)
+	private GameState GetGameState(Tilemap tilemap, bool newGameState=false)
 	{
 		var gameState = new GameState();
-		//BoundsInt bounds = tilemap.cellBounds;
-
 		RectInt bounds = board.Bounds;
 
-		//var row = bounds.yMin;
 		var row = bounds.yMin;
 		var tilesInRow = 0;
 
-		while (row < bounds.yMax)       //from bottom row
+		if (newGameState)
+		{
+			gameState.pieceHeight = piece.GetRowNumber();
+		}
+
+		while (row < bounds.yMax) //from bottom row
 		{
 			var emptyTilesInRow = 0;
 			for (int col = bounds.xMin; col < bounds.xMax; col++) //Each Column in row
@@ -156,7 +155,7 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 				}
 				else
 				{
-					gameState.maxHeight = row - bounds.yMin; //then the row below this was the maximum height
+					gameState.maxHeight = board.GetRowNumber(row-1); //then the row below this was the maximum height
 				}
 				gameState.tilesInTopRow = tilesInRow;
 				break; // stop counting
@@ -190,7 +189,7 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 		}
 
 		//Get New state of TileMap
-		var newGameState = GetGameState(mainTileMap);
+		var newGameState = GetGameState(mainTileMap, true);
 
 		//Remove possible game piece
 		board.Clear(piece);
@@ -198,7 +197,14 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 		//Compare old main TileMap state and new TileMap State and add decide score
 		var score = 0;
 
-		score += (newGameState.maxHeight - oldGameState.maxHeight) * (int)AiPositionScoreSheet.HeigherHeight;
+		float pieceExponent = 0.1f + 0.1f * (float)newGameState.pieceHeight;
+		int pieceHeightMaxScore = newGameState.pieceHeight <= 10 ? 0 : 20; // Maximum score is 0 if pieceHeight <= 10, otherwise 20
+		score += Mathf.RoundToInt(pieceHeightMaxScore - Mathf.Pow((float)newGameState.pieceHeight, pieceExponent));
+
+		float heightExponent = 0.1f + 0.1f * (float)newGameState.maxHeight;
+		int heightMaxScore = newGameState.maxHeight <= 10 ? 0 : 20; // Maximum score is 0 if pieceHeight <= 10, otherwise 20
+		score += Mathf.RoundToInt(heightMaxScore - Mathf.Pow((float)newGameState.maxHeight, heightExponent));
+
 		score += newGameState.tilesInTopRow > oldGameState.tilesInTopRow ? (int)AiPositionScoreSheet.FlatterTop : 0;
 		score += (newGameState.trappedTileSpaces - oldGameState.trappedTileSpaces) * (int)AiPositionScoreSheet.GapsCreated;
 		score += newGameState.completeLines * (int)AiPositionScoreSheet.LineClear;

@@ -9,4 +9,6 @@ public class GameState
 
 	public int completeLines { get; set; } = 0;
 
+	public int? pieceHeight { get; set; } = null;
+
 }
