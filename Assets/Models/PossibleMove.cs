@@ -8,5 +8,8 @@ public class PossibleMove
 
 	public int score { get; set; }
 
+	public bool heldTetromino { get; set; } = false;
+
+	public bool nextTetromino { get; set; } = false;
 
 }

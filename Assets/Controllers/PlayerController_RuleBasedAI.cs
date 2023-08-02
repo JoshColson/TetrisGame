@@ -18,6 +18,14 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 	private PossibleMove bestMove;
 	public Button activateAi;
 
+	private TetrominoData nextTetromino { get; set; }
+	private TetrominoData currentTetromino { get; set; }
+	private TetrominoData? heldTetromino { get; set; }
+
+	private bool heldTetrominoCheck { get; set; } = false;
+
+	private bool nextTetrominoCheck { get; set; } = false;
+
 	private void Awake()
 	{
         mainTileMap = mainBoard.GetComponentInChildren<Tilemap>();
@@ -38,13 +46,20 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 
 	public void Go()
 	{
-		possibleMoves.Clear();
 		piece = board.activePiece;
+
+		nextTetromino = board.sceneController.nextTetronimo;
+		heldTetromino = board.sceneController.heldTetromino;
+		currentTetromino = piece.data;
+
+		possibleMoves.Clear();
 		CollectPossibleMoves();
 		bestMove = possibleMoves.OrderByDescending(move => move.score).FirstOrDefault();
 		MoveIntoBestMove();
 		piece.HardDrop();
 	}
+
+
 
 	//private IEnumerator Wait(float duration)
 	//{
@@ -53,6 +68,16 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 
 	private void MoveIntoBestMove()
 	{
+		if (!bestMove.heldTetromino && !bestMove.nextTetromino)
+		{
+			piece.ReplacePiece(currentTetromino);
+		}
+		else
+		{
+			piece.SwapTetromino();
+		}
+
+
 		while (piece.rotationIndex != bestMove.rotationIndex)
 		{
 			piece.Rotate(1);
@@ -75,20 +100,54 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 
 	private void CollectPossibleMoves()
 	{
+		MoveGetScore(); //gather data from current piece
+
+		//Switch to held piece
+		if (heldTetromino != null)
+		{
+			heldTetrominoCheck = true;
+			board.Clear(piece);
+			piece.Initialize(board, piece.position, (TetrominoData)heldTetromino);
+			MoveGetScore();// gather data from held piece
+			heldTetrominoCheck = false;
+		}
+		else
+		{
+			//Switch to next piece
+			nextTetrominoCheck = true;
+			board.Clear(piece);
+			piece.Initialize(board, piece.position, nextTetromino);
+			MoveGetScore();// gather data from next piece
+			nextTetrominoCheck = false;
+		}
+
+	}
+
+	private void MoveGetScore()
+	{
 		while (piece.Move(Vector2Int.left)) { }
 
 		do //while the piece is not the original rotation
 		{
 			do //While the piece is not the maximum to the right it can be
 			{
-				while (piece.Move(Vector2Int.down)) {  };
+				while (piece.Move(Vector2Int.down)) { };
 				board.Set(piece, possiblePlacement: true);
-				possibleMoves.Add(new PossibleMove 
-				{ 
-					position = piece.position, 
-					rotationIndex = piece.rotationIndex, 
-					score=CalculateMoveScore() 
-				});
+				var possibleMove = new PossibleMove
+				{
+					position = piece.position,
+					rotationIndex = piece.rotationIndex,
+					score = CalculateMoveScore()
+				};
+				if (nextTetrominoCheck)
+				{
+					possibleMove.nextTetromino = true;
+				}
+				else if (heldTetrominoCheck)
+				{
+					possibleMove.heldTetromino = true;
+				}
+				possibleMoves.Add(possibleMove);
 				while (piece.position.y != board.spawnPosition.y) { piece.Move(Vector2Int.up); }; //Reset Y position
 
 			}
@@ -99,6 +158,8 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 		}
 		while (piece.rotationIndex != 0); // Break if piece is same as original rotation
 	}
+
+
 
 	private GameState GetGameState(Tilemap tilemap, bool newGameState=false)
 	{

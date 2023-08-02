@@ -70,7 +70,7 @@ public class Piece : MonoBehaviour
 		position = newPosition;
 	}
 
-	private void ReplacePiece(TetrominoData newPiece)
+	public void ReplacePiece(TetrominoData newPiece)
 	{
 		Initialize(board, position, newPiece);
 		sceneController.NewTetronimo(newPiece);
@@ -150,21 +150,26 @@ public class Piece : MonoBehaviour
 		}
 	}
 
+	public void SwapTetromino()
+	{
+		if (sceneController.heldTetromino is null)
+		{
+			sceneController.StoreHeldTetromino();
+			ReplacePiece(sceneController.currentTetronimo);
+		}
+		else
+		{
+			var held = sceneController.heldTetromino;
+			sceneController.StoreHeldTetromino();
+			ReplacePiece((TetrominoData)held);
+		}
+	}
+
 	private void PlayerMovement()
 	{
 		if (Input.GetKeyDown(KeyCode.C))
 		{
-			if (sceneController.heldTetromino is null)
-			{
-				sceneController.StoreHeldTetromino();
-				ReplacePiece(sceneController.currentTetronimo);
-			}
-			else
-			{
-				var held = sceneController.heldTetromino;
-				sceneController.StoreHeldTetromino();
-				ReplacePiece((TetrominoData)held);
-			}
+			SwapTetromino();
 		}
 		else if (Input.GetKeyDown(KeyCode.Q))
 		{
