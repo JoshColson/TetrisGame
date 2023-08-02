@@ -189,14 +189,56 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 				}
 				else //If not:
 				{
-					var foundTile = false;
+
 					emptyTilesInRow++;
+					var foundTile = false;
+					var foundLeftTile = false;
+					var foundRightTile = false;
 
 					for (int rowChecked = row+1; rowChecked < bounds.yMax; rowChecked++) //loop over every tile directly above
 					{
-						Vector3Int abovePosition = new Vector3Int(col, rowChecked, 0);//New position directly above
-						TileBase tileAbove = tilemap.GetTile(abovePosition);
-						if (piece.TileCheck(tileAbove))// If tile above is null, count as trapped tile
+						Vector3Int tilePosition = new Vector3Int(col, rowChecked, 0);//New tile position
+						TileBase tileAbove = tilemap.GetTile(tilePosition);
+						var tileCheck = piece.TileCheck(tileAbove);
+
+						if (col - 1 > bounds.xMin)
+						{
+							if (rowChecked >= row + 2 && !foundLeftTile && !tileCheck)
+							{
+								Vector3Int leftTilePosition = new Vector3Int(col - 1, rowChecked, 0);
+								if (piece.TileCheck(tilemap.GetTile(leftTilePosition)))
+								{
+									foundLeftTile = true;
+								}
+							}
+						}
+						else
+						{
+							foundLeftTile = true;
+						}
+						if (foundLeftTile)
+						{
+							if (col + 1 < bounds.xMax)
+							{
+								if (rowChecked >= row+2 && !foundRightTile && !tileCheck)
+								{
+									Vector3Int rightTilePosition = new Vector3Int(col + 1, rowChecked, 0);//New tile position to the right
+									if(piece.TileCheck(tilemap.GetTile(rightTilePosition)))
+									{
+										foundRightTile = true;
+									}
+								}
+							}
+                            else
+                            {
+								foundRightTile = true;
+                            }
+                        }
+
+						if (col-1 > bounds.xMin && rowChecked >= row+2 && !foundLeftTile && !tileCheck)
+						{
+						}
+						if (piece.TileCheck(tileAbove))// If tile above is not null, count as trapped tile
 						{
 							foundTile = true;
 							break;
@@ -205,6 +247,10 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 					if (foundTile)// If we did find a tile at any point above, count the original one as trapped, if not, its not trapped
 					{
 						gameState.trappedTileSpaces++;
+					}
+					else if (foundLeftTile && foundRightTile)
+					{
+						gameState.longGaps++;
 					}
 				}
 			}
@@ -267,8 +313,9 @@ public class PlayerController_RuleBasedAI : MonoBehaviour
 		score += Mathf.RoundToInt(heightMaxScore - Mathf.Pow((float)newGameState.maxHeight, heightExponent));
 
 		score += newGameState.tilesInTopRow > oldGameState.tilesInTopRow ? (int)AiPositionScoreSheet.FlatterTop : 0;
-		score += (newGameState.trappedTileSpaces - oldGameState.trappedTileSpaces) * (int)AiPositionScoreSheet.GapsCreated;
+		score += (newGameState.trappedTileSpaces - oldGameState.trappedTileSpaces) * (int)AiPositionScoreSheet.TrappedGapsCreated;
 		score += newGameState.completeLines * (int)AiPositionScoreSheet.LineClear;
+		score += newGameState.longGaps <=1 ? 0 : newGameState.longGaps * (int)AiPositionScoreSheet.LongGapsCreated;
 		//Return score
 		return score;
 	}
