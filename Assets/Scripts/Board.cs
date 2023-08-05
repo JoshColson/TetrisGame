@@ -3,30 +3,22 @@ using Assets.Controllers;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using Assets.Data;
 
 public class Board : MonoBehaviour
 {
-	const string linesClearedWriting = "Lines Cleared: ";
-	const string scoreWriting = "Score: ";
-	const int pointsOneLine = 40;
-	const int pointsTwoLine = 100;
-	const int pointsThreeLine = 300;
-	const int pointsFourLine = 1200;
-	const int perfectClearMultiplyer = 10;
 	public TetrominoData[] tetrominos;
 	public GameObject ruleBasedAi;
 	public Tilemap tilemap { get; set; }
 	public Piece activePiece { get; private set; }
-	public Text linesClearedText; 
-	public Text scoreText;
+
 	public Vector3Int spawnPosition;
 	public Vector2Int boardSize = new Vector2Int(10, 20);
-
 	private int linesCleared = 0;
 	private int score = 0;
-
 	public SceneController sceneController { get; private set; }
 	public bool ruleBasedAIActive;
+	private GameUiController gameUiController;
 
 	public RectInt Bounds
 	{
@@ -38,13 +30,23 @@ public class Board : MonoBehaviour
 	}
 	private void Awake()
 	{
+		gameUiController = GameObject.FindWithTag(Tags.SceneController.ToString()).GetComponent<GameUiController>();
 		sceneController = new SceneController(tetrominos);
-		linesClearedText.text = linesClearedWriting+linesCleared.ToString();
-		scoreText.text = scoreWriting+score.ToString();
+		SetCurrentScore(score);
+		SetLinesCleared(linesCleared);
 		tilemap = GetComponentInChildren<Tilemap>();
 		activePiece = GetComponentInChildren<Piece>();
 		//get noCollideTile from the same index tetrominos
 
+	}
+
+	private void SetCurrentScore(int score)
+	{
+		gameUiController.SetScoreText(score);
+	}
+	private void SetLinesCleared(int linesCleared)
+	{
+		gameUiController.SetLinesClearedText(linesCleared);
 	}
 
 	private void Start()
@@ -82,10 +84,13 @@ public class Board : MonoBehaviour
 		// The row height is the total range (20 units) divided by the number of rows (20 rows)
 		int rowNumber = Mathf.FloorToInt(shiftedYPosition);
 
-		// Clamp the row number to ensure it is within the valid range (0 to 20)
-		rowNumber = Mathf.Clamp(rowNumber, 0, 20);
-
 		return rowNumber;
+	}
+
+	public bool CheckForTile(Vector2Int position, Piece piece)
+	{
+		Vector3Int positionToCheck = new Vector3Int(position.x, position.y, 0);
+		return piece.TileCheck(tilemap.GetTile(positionToCheck));
 	}
 
 	private void GameOver()
@@ -95,17 +100,14 @@ public class Board : MonoBehaviour
 		NavigationController.SceneNavigate(SceneNames.GameOver);
 	}
 
-	public void Set(Piece piece, bool? collide=null, bool possiblePlacement = false)
+	public void Set(Piece piece, bool collide=true, bool possiblePlacement = false)
 	{
 		Clear(piece);
 		Tile tile;
-		if (collide == true)
-		{
-			tile = piece.data.tile;
-		}
-		else if (collide == false)
+		if (!collide)
 		{
 			tile = piece.data.noCollideTile;
+			
 		}
 		else if (possiblePlacement)
 		{
@@ -113,7 +115,7 @@ public class Board : MonoBehaviour
 		}
 		else
 		{
-			tile = null;
+			tile = piece.data.tile;
 		}
 		for (int i = 0; i<piece.cells.Length; i++)
 		{
@@ -121,6 +123,7 @@ public class Board : MonoBehaviour
 			tilemap.SetTile(tilePosition, tile);
 		}
 	}
+
 	public void Clear(Piece piece)
 	{
 		for (int i = 0; i < piece.cells.Length; i++)
@@ -188,8 +191,7 @@ public class Board : MonoBehaviour
 			if (IsLineFull(row))
 			{
 				LineClear(row);
-				linesCleared++;
-				linesClearedText.text = linesClearedWriting+linesCleared.ToString();
+				SetLinesCleared(++linesCleared);
 			}
 			else
 			{
@@ -198,7 +200,7 @@ public class Board : MonoBehaviour
 			}
 		}
 		score += CalculateScore(perfectClear, (linesCleared - cleared));
-		scoreText.text = scoreWriting + score.ToString();
+		SetCurrentScore(score);
 	}
 
 	private int CalculateScore(bool perfectClear, int linesCleared)
@@ -207,23 +209,23 @@ public class Board : MonoBehaviour
 		switch (linesCleared)
 		{
 			case 1:
-				score = pointsOneLine;
+				score = (int)ScoreValues.pointsOneLine;
 				break;
 			case 2:
-				score = pointsTwoLine;
+				score = (int)ScoreValues.pointsTwoLine;
 				break;
 			case 3:
-				score = pointsThreeLine;
+				score = (int)ScoreValues.pointsThreeLine;
 				break;
 			case 4:
-				score = pointsFourLine;
+				score = (int)ScoreValues.pointsFourLine;
 				break;
 			default:
 				return 0;
 		}
 		if (perfectClear)
 		{
-			score = (score * perfectClearMultiplyer);
+			score = (score * (int)ScoreValues.perfectClearMultiplyer);
 		}
 		if ((int) Math.Round(score *+ (activePiece.speedMultiplier * 0.5))==0)
 		{
@@ -232,15 +234,13 @@ public class Board : MonoBehaviour
 
 		return Mathf.RoundToInt(Mathf.Clamp((float)(score + score * (activePiece.speedMultiplier * 0.5)), score, float.MaxValue));
 	}
-	private bool IsLineFull(int row)
+	public bool IsLineFull(int row)
 	{
 		RectInt bounds = Bounds;
 
 		for (int col = bounds.xMin; col< bounds.xMax; col++)
 		{
-			Vector3Int position = new Vector3Int(col, row, 0);
-
-			if (!tilemap.HasTile(position))
+			if (!CheckForTile(new Vector2Int(col, row), activePiece))
 			{
 				return false;
 			}

@@ -316,8 +316,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17b48f73bd9f3df42b9675a64d5aa767, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainBoard: {fileID: 520034065}
-  ghostBoard: {fileID: 1380223943}
   activateAi: {fileID: 1212579341}
 --- !u!4 &131732746
 Transform:
@@ -880,7 +878,7 @@ GameObject:
   - component: {fileID: 520034066}
   m_Layer: 0
   m_Name: MainBoard
-  m_TagString: MainBoard
+  m_TagString: Board
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -945,8 +943,6 @@ MonoBehaviour:
     noCollideTile: {fileID: 0}
     possiblePlacementTile: {fileID: 0}
   ruleBasedAi: {fileID: 131732744}
-  linesClearedText: {fileID: 1048656680}
-  scoreText: {fileID: 1164478994}
   spawnPosition: {x: -1, y: 9, z: 0}
   boardSize: {x: 10, y: 20}
   ruleBasedAIActive: 1
@@ -1088,6 +1084,52 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 4
   m_TargetDisplay: 0
+--- !u!1 &709913098
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 709913100}
+  - component: {fileID: 709913099}
+  m_Layer: 0
+  m_Name: SceneController
+  m_TagString: SceneController
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &709913099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709913098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df728a4313659634a9ed64ed25569ddf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linesClearedObject: {fileID: 1048656680}
+  scoreObject: {fileID: 1164478994}
+--- !u!4 &709913100
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709913098}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.883964, y: -1.9047699, z: 2.5637155}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &744033987
 GameObject:
   m_ObjectHideFlags: 0

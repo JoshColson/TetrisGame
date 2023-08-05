@@ -5,13 +5,18 @@ using UnityEngine.Tilemaps;
 
 public class Piece : MonoBehaviour
 {
+	private const int spawnRotationIndex = 0;
+	public int SpawnRotationIndex { get { return spawnRotationIndex; } }
+
 	public Board board { get; private set; }
 
 	private SceneController sceneController;
 	public TetrominoData data { get; private set; }
 	public Vector3Int position { get; set; }
 	public Vector3Int[] cells { get; set; }
-	public int rotationIndex { get; set; }
+	public int currentRotationIndex { get; set; }
+
+
 
 	public float lockDelay = 0.5f;
 	public bool increaseSpeed = false;
@@ -103,7 +108,7 @@ public class Piece : MonoBehaviour
 		sceneController = board.sceneController;
 		this.position = position;
 		this.data = data;
-		rotationIndex = 0;
+		currentRotationIndex = SpawnRotationIndex;
 		lockTime = 0f;
 
 		if (cells == null)
@@ -271,14 +276,14 @@ public class Piece : MonoBehaviour
 
 	public void Rotate(int direction)
 	{
-		int originalRotation = rotationIndex;
-		rotationIndex = Wrap(rotationIndex + direction, 0 ,4);
+		int originalRotation = currentRotationIndex;
+		currentRotationIndex = Wrap(currentRotationIndex + direction, 0 ,4);
 
 		ApplyRotationMatrix(direction);
 
-		if (!TestWallKicks(rotationIndex, direction))
+		if (!TestWallKicks(currentRotationIndex, direction))
 		{
-			rotationIndex = originalRotation;
+			currentRotationIndex = originalRotation;
 			ApplyRotationMatrix(-direction);
 		}
 	}

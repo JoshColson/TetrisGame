@@ -1564,9 +1564,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1765028557}
   - component: {fileID: 1765028556}
+  - component: {fileID: 1765028558}
   m_Layer: 0
   m_Name: MenuController
-  m_TagString: Untagged
+  m_TagString: SceneController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1585,8 +1586,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   newGameButton: {fileID: 854755975}
   difficultySlider: {fileID: 553096799}
-  difficultyText: {fileID: 598104555}
-  highScoreText: {fileID: 1289231656}
 --- !u!4 &1765028557
 Transform:
   m_ObjectHideFlags: 0
@@ -1602,3 +1601,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1765028558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765028555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 052ba6494eb20d24399c1c56293b8dee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  difficultyLevelObject: {fileID: 598104555}
+  highScoreObject: {fileID: 1289231656}
