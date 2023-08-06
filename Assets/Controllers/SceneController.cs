@@ -4,9 +4,11 @@ using UnityEngine.SceneManagement;
 
 namespace Assets.Controllers
 {
-	public class SceneController : MonoBehaviour
+	public class SceneController
 	{
 		public TetrominoData nextTetronimo { get; set; }
+
+		public bool ruleBasedAIActive { get; set; }
 
 		public TetrominoData currentTetronimo { get; set; }
 		public TetrominoData[] tetrominoes { get; set; }

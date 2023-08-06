@@ -1,4 +1,5 @@
 using Assets.Controllers;
+using Assets.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,39 +7,38 @@ using UnityEngine.UI;
 public class GameOverMenu : MonoBehaviour
 {
 	// Start is called before the first frame update
-	const string scoreWriting = "Score: ";
-	const string difficultyWriting = "Difficulty: ";
-	const string highScoreWriting = "High Score: ";
+
 	public Button returnButton;
+	private GameOverUiController uiController;
 
-	public TextMeshProUGUI difficultyText;
-	public TextMeshProUGUI scoreText;
-	public TextMeshProUGUI newText;
-	public TextMeshProUGUI highScore;
-
-	private int score = 0;
+	private int score { get; set; } = 0;
 
 	public void Start()
 	{
+		uiController = GameObject.FindWithTag(Tags.SceneController.ToString()).GetComponent<GameOverUiController>();
 		score = GameData.score;
-		difficultyText.text = difficultyWriting+GameData.difficultyLevel.ToString();
-		scoreText.text = scoreWriting+score.ToString();
 		returnButton.onClick.AddListener(ReturnClick);
 
-		SetHighScore();
+		SetDifficultyLevel();
+		SetScore();
 	}
 
-	private void SetHighScore()
+	private void SetDifficultyLevel()
 	{
-		if (score > GameData.highScore)
+		uiController.SetDifficultyLevel(GameData.difficultyLevel);
+	}
+	private void SetScore()
+	{
+		bool isNewHighScore = score > GameData.highScore;
+		uiController.SetScoreText(score);
+		if (isNewHighScore)
 		{
 			GameData.highScore = score;
-			newText.enabled = true;
+			SaveHighScore(score);
 		}
-		highScore.text = highScoreWriting + GameData.highScore.ToString();
-		SaveHighScore(score);
+		uiController.SetHighScoreText(GameData.highScore, isNewHighScore);
 	}
-
+		
 	private void SaveHighScore(int score)
 	{
 		PlayerPrefs.SetInt("HighScore", score);

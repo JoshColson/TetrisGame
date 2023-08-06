@@ -4,9 +4,10 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - MainBoard
   - NextTetronimoBoard
   - OnHoldBoard
+  - SceneController
+  - Board
   layers:
   - Default
   - TransparentFX

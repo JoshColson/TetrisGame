@@ -1,15 +1,22 @@
-﻿using Assets.Controllers;
+﻿using System.Collections;
+using Assets.Controllers;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Piece : MonoBehaviour
 {
+	private const int spawnRotationIndex = 0;
+	public int SpawnRotationIndex { get { return spawnRotationIndex; } }
+
 	public Board board { get; private set; }
 
 	private SceneController sceneController;
 	public TetrominoData data { get; private set; }
-	public Vector3Int position { get; private set; }
-	public Vector3Int[] cells { get; private set; }
-	public int rotationIndex { get; private set; }
+	public Vector3Int position { get; set; }
+	public Vector3Int[] cells { get; set; }
+	public int currentRotationIndex { get; set; }
+
+
 
 	public float lockDelay = 0.5f;
 	public bool increaseSpeed = false;
@@ -27,7 +34,8 @@ public class Piece : MonoBehaviour
 							   //public float elapsedTime = 0.0f; // Elapsed time since the start
 	private float stepTimer = 0.0f; // Timer for move down interval
 	public float decrementCurrentSpeed;
-
+	public bool IsProposedPiece { get; set; } = false;
+	public bool setCollide { private get; set; } = true;
 
 	private void Awake()
 	{
@@ -36,7 +44,7 @@ public class Piece : MonoBehaviour
 	}
 
 
-	private void BumpIntoBounds(Vector3Int newPosition)
+	private void ReturnToBounds(Vector3Int newPosition)
 	{
 		var validData = board.IsValidPosition(this, newPosition);
 
@@ -67,11 +75,11 @@ public class Piece : MonoBehaviour
 		position = newPosition;
 	}
 
-	private void ReplacePiece(TetrominoData newPiece)
+	public void ReplacePiece(TetrominoData newPiece)
 	{
 		Initialize(board, position, newPiece);
 		sceneController.NewTetronimo(newPiece);
-		BumpIntoBounds(position);
+		ReturnToBounds(position);
 	}
 
 	private void SetDifficultySettings()
@@ -100,7 +108,7 @@ public class Piece : MonoBehaviour
 		sceneController = board.sceneController;
 		this.position = position;
 		this.data = data;
-		rotationIndex = 0;
+		currentRotationIndex = SpawnRotationIndex;
 		lockTime = 0f;
 
 		if (cells == null)
@@ -118,13 +126,15 @@ public class Piece : MonoBehaviour
 	{
 		board.Clear(this);
 
+		//activate input from user
 		if (Input.anyKeyDown)
 		{
+			//return if human input
 			PlayerMovement();
 		}
 
 		StepController();
-		board.Set(this);
+		board.Set(this, false);
 	}
 
 	private void StepController()
@@ -145,21 +155,26 @@ public class Piece : MonoBehaviour
 		}
 	}
 
+	public void SwapTetromino()
+	{
+		if (sceneController.heldTetromino is null)
+		{
+			sceneController.StoreHeldTetromino();
+			ReplacePiece(sceneController.currentTetronimo);
+		}
+		else
+		{
+			var held = sceneController.heldTetromino;
+			sceneController.StoreHeldTetromino();
+			ReplacePiece((TetrominoData)held);
+		}
+	}
+
 	private void PlayerMovement()
 	{
 		if (Input.GetKeyDown(KeyCode.C))
 		{
-			if (sceneController.heldTetromino is null)
-			{
-				sceneController.StoreHeldTetromino();
-				ReplacePiece(sceneController.currentTetronimo);
-			}
-			else
-			{
-				var held = sceneController.heldTetromino;
-				sceneController.StoreHeldTetromino();
-				ReplacePiece((TetrominoData)held);
-			}
+			SwapTetromino();
 		}
 		else if (Input.GetKeyDown(KeyCode.Q))
 		{
@@ -190,24 +205,29 @@ public class Piece : MonoBehaviour
 		}
 	}
 
+
+
 	private void Step()
 	{
-		Move(Vector2Int.down);
+		if (IsProposedPiece)
+		{
+			return;
+		}
 
-		if(lockTime >= lockDelay)
+		if((!Move(Vector2Int.down)) && lockTime >= lockDelay)
 		{
 			Lock() ;
 		}
 	}
 
-	private void Lock()
+	public void Lock()
 	{
-		board.Set(this);
+		board.Set(this, true);
 		board.ClearLines();
 		board.SpawnPiece();
 	}
 
-	private void HardDrop()
+	public void HardDrop()
 	{
 		while (Move(Vector2Int.down))
 		{
@@ -216,31 +236,54 @@ public class Piece : MonoBehaviour
 		Lock();
 	}
 
-	private bool Move(Vector2Int translation)
+	public bool Move(Vector2Int translation)
 	{
 		Vector3Int newPosition = position;
 		newPosition.x += translation.x;
 		newPosition.y += translation.y;
 
 		var validData = board.IsValidPosition(this, newPosition);
-		if ((!validData.colliding) && !validData.outOfBounds)
+		if (!validData.colliding && !validData.outOfBounds)
 		{
-			position = newPosition;
-			lockTime = 0f;
+			board.Clear(this);
+			SetPositionAndWait(newPosition);
+
 		}
 		return (!validData.colliding) && !validData.outOfBounds;
 	}
 
-	private void Rotate(int direction)
+	public int GetRowNumber()
 	{
-		int originalRotation = rotationIndex;
-		rotationIndex = Wrap(rotationIndex + direction, 0 ,4);
+		// Shift the y position by 10 units so that the range becomes 0 to 20
+		float shiftedYPosition = position.y + 10f;
+
+		// Calculate the row number by dividing the shifted y position by the row height
+		// The row height is the total range (20 units) divided by the number of rows (20 rows)
+		int rowNumber = Mathf.FloorToInt(shiftedYPosition);
+
+		// Clamp the row number to ensure it is within the valid range (0 to 20)
+		rowNumber = Mathf.Clamp(rowNumber, 0, 20);
+
+		return rowNumber;
+	}
+
+	public void SetPositionAndWait(Vector3Int newPosition)
+	{
+		position = newPosition;
+		lockTime = 0f;
+		//wait for 2 seconds without waitforsecondsrealtime or waitforsen
+	}
+
+	public void Rotate(int direction)
+	{
+		int originalRotation = currentRotationIndex;
+		currentRotationIndex = Wrap(currentRotationIndex + direction, 0 ,4);
 
 		ApplyRotationMatrix(direction);
 
-		if (!TestWallKicks(rotationIndex, direction))
+		if (!TestWallKicks(currentRotationIndex, direction))
 		{
-			rotationIndex = originalRotation;
+			currentRotationIndex = originalRotation;
 			ApplyRotationMatrix(-direction);
 		}
 	}
@@ -310,6 +353,17 @@ public class Piece : MonoBehaviour
 		{
 			return min + (input - min) % (max - min);
 		}
+	}
+
+	public bool TileCheck(TileBase tile)
+	{
+		if (tile == null || 
+			tile.name == TileNames.NoCollideTile.ToString() ||
+			tile.name == TileNames.PossiblePlacement.ToString())
+		{
+			return false;
+		}
+		return true;
 	}
 
 
